@@ -2,65 +2,151 @@
 #include <fstream>
 #include <vector>
 #include <queue>
+#include <map>
+#include <set>
+
+class Graph
+{
+private:
+    std::vector<std::vector<int>> graph;
+    std::vector<std::set<int>> components;
+    std::set<int> usedNodes;
+    int size;
+    std::map<int, std::vector<int>> distances;
+    std::map<int, std::vector<int>> parents;
+
+public:
+    Graph(std::string file)
+    {
+        std::ifstream matrix(file);
+        size = 0;
+        matrix >> size;
+
+        graph.resize(size);
+        components.resize(1);
+        for (int i = 0; i < size; i++)
+        {
+            graph[i].resize(size);
+            for (int j = 0; j < size; j++)
+            {
+                matrix >> graph[i][j];
+            }
+        }
+        matrix.close();
+
+        for (int s = 0; s < size; s++)
+        {
+            bfs(s);
+        }
+    }
+
+    void bfs(int start)
+    {
+        std::vector<int> d(size, size);
+        std::vector<int> p(size, -1);
+        d[start] = 0;
+        std::queue<int> q;
+        q.push(start);
+
+        if ((!components.back().empty()) && usedNodes.size() != size)
+        {
+            components.resize(components.size() + 1);
+        }
+
+        if (!usedNodes.count(start))
+        {
+            components.back().insert(start);
+            usedNodes.insert(start);
+        }
+
+        while (!q.empty())
+        {
+            int v = q.front();
+            q.pop();
+            if (!usedNodes.count(v))
+            {
+                components.back().insert(v);
+                usedNodes.insert(v);
+            }
+
+            for (int i = 0; i < graph[v].size(); i++)
+            {
+                if (graph[v][i] != 0 && d[i] > d[v] + 1)
+                {
+                    p[i] = v;
+                    d[i] = d[v] + 1;
+                    q.push(i);
+                }
+            }
+        }
+        distances[start] = d;
+        parents[start] = p;
+
+    }
+
+    std::vector<int> getPath(int start, int end)
+    {
+        std::vector<int> d = distances[start];
+        std::vector<int> p = parents[start];
+
+        if (d[end] == size)
+        {
+            return {};
+        }
+
+        std::vector<int> path;
+        while (end != -1)
+        {
+            path.push_back(end);
+            end = p[end];
+        }
+
+        std::reverse(path.begin(), path.end());
+        return path;
+    }
+
+    int getSize()
+    {
+        return size;
+    }
+
+    std::vector<int> getDistance(int s)
+    {
+        return distances[s];
+    }
+
+    std::vector<std::set<int>> getComponents()
+    {
+        return components;
+    }
+};
 
 
 int main() {
-    std::ifstream matrix("C:\\CLionProjects\\ASD_Lab_2_3\\matrix.txt");
-
-    int n;
-    matrix >> n;
-
-    std::vector<std::vector<int>> g(n);
-    for (int i = 0; i < n; i++)
-    {
-        g[i].resize(n);
-        for (int j = 0; j < n; j++)
-        {
-
-            matrix >> g[i][j];
-        }
-    }
-    matrix.close();
-
+    Graph graph("C:\\CLionProjects\\ASD_Lab_2_3\\matrix.txt");
     int s = 0;
 
-    std::queue<int> q;
-    q.push(s);
-    std::vector<int> lengths(n, -1);
-    std::vector<int> parents(n, -1);
-    lengths[s] = 0;
-
-    while (!q.empty())
+    for (int i = 0; i < graph.getSize(); i++)
     {
-        int v = q.front();
-        q.pop();
+        std::vector<int> path = graph.getPath(s, i);
 
-        for (int i = 0; i < g[v].size(); ++i)
+        for (int j = 0; j < path.size(); j++)
         {
-            int to = g[v][i];
-            if (lengths[to] == -1)
-            {
-                q.push(to);
-                lengths[to] = lengths[v] + 1;
-                parents[to] = v;
-                q.push(to);
-            }
-
+            std::cout << path[j] << " ";
         }
+        std::cout << std::endl;
     }
+    std::cout << std::endl;
 
-    for (int i = 0; i < parents.size(); i++)
+    std::cout << graph.getComponents().size() << std::endl;
+    for (auto comp : graph.getComponents())
     {
-        std::cout << i << '(' << lengths[i] << ")\t:";
-        int x = parents[i];
-        while (x != -1)
+        for (int i : comp)
         {
-            std::cout << x << ' ';
-            x = parents[x];
+            std::cout << i << " ";
         }
         std::cout << std::endl;
     }
 
-    std::cout << "Hello, World!" << std::endl;
     return 0;
 }
