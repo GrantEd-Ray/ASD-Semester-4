@@ -42,7 +42,7 @@ public:
 
     void bfs(int start)
     {
-        std::vector<int> d(size, size);
+        std::vector<int> d(size, 1000);
         std::vector<int> p(size, -1);
         d[start] = 0;
         std::queue<int> q;
@@ -71,10 +71,10 @@ public:
 
             for (int i = 0; i < graph[v].size(); i++)
             {
-                if (graph[v][i] != 0 && d[i] > d[v] + 1)
+                if (graph[v][i] != 0 && d[i] > d[v] + graph[v][i])
                 {
                     p[i] = v;
-                    d[i] = d[v] + 1;
+                    d[i] = d[v] + graph[v][i];
                     q.push(i);
                 }
             }
@@ -123,10 +123,10 @@ public:
 
 
 int main() {
-    Graph graph("C:\\CLionProjects\\ASD_Lab_2_3\\matrix.txt");
+    Graph graph("C:\\Users\\GADashkov\\Desktop\\matrix.txt");
     int s = 0;
 
-    for (int i = 0; i < graph.getSize(); i++)
+    /*for (int i = 0; i < graph.getSize(); i++)
     {
         std::vector<int> path = graph.getPath(s, i);
 
@@ -136,9 +136,16 @@ int main() {
         }
         std::cout << std::endl;
     }
-    std::cout << std::endl;
+    std::cout << std::endl;*/
 
-    std::cout << graph.getComponents().size() << std::endl;
+    std::vector<int> d = graph.getDistance(s);
+
+    for (int i = 0; i < d.size(); i++)
+    {
+        std::cout << i << " : " << d[i] << std::endl;
+    }
+
+    /*std::cout << graph.getComponents().size() << std::endl;
     for (auto comp : graph.getComponents())
     {
         for (int i : comp)
@@ -146,7 +153,7 @@ int main() {
             std::cout << i << " ";
         }
         std::cout << std::endl;
-    }
+    }*/
 
     return 0;
 }
